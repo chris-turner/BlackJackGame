@@ -12,12 +12,6 @@ namespace BlackJackGame
         public static int playerHandValue = 0;
         public static int dealerHandValue = 0;
         public static List<Card> Deck1 = new List<Card>();
-        public static Card card1;
-        public static Card card2;
-        public static Card card3;
-        public static Card card4;
-        public static Card hitCard = new Card();
-        public static Card dealerHitCard = new Card();
         public static int HitClicks = 0;
         public static int AceCount = 0;
         public static int DealerAceCount = 0;
@@ -101,6 +95,7 @@ namespace BlackJackGame
 
         public string Hit()
         {
+            Card hitCard;
             string cardInfo;
             bool isunique = false;
             do
@@ -440,6 +435,7 @@ namespace BlackJackGame
 
         public string DealerHit()
         {
+            Card dealerHitCard;
             string cardInfo;
             bool isunique = false;
             do
@@ -867,6 +863,10 @@ namespace BlackJackGame
 
         public void DealCards(List<Card> Deck)
         {
+            Card card1;
+            Card card2;
+            Card card3;
+            Card card4;
             dealercardpic2.Attributes["src"] = ResolveUrl("~/Images/Cardback.jpg");
             //player card1
             bool isunique = false;
@@ -895,7 +895,6 @@ namespace BlackJackGame
             while (!isunique);
 
             //player card 2
-            Card card2;
             bool isunique2 = false;
             do
             {
@@ -921,8 +920,7 @@ namespace BlackJackGame
             }
 
             while (!isunique2);
-
-            Card card3;
+            
             bool isunique3 = false;
             do
             {
@@ -949,8 +947,7 @@ namespace BlackJackGame
             }
 
             while (!isunique3);
-
-            Card card4;
+            
             bool isunique4 = false;
             do
             {
@@ -1286,11 +1283,7 @@ namespace BlackJackGame
             playerHandValue = 0;
             dealerHandValue = 0;
             Deck1 = ShuffleDeck();
-            card1 = new Card();
-            card2 = new Card();
-            card3 = new Card();
-            card4 = new Card();
-            hitCard = new Card();
+
             lblDealerCard1.Text = "";
             lblDealerCard2.Text = "";
             lblDealerHandValue.Text = "";
