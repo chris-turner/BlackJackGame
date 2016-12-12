@@ -5,53 +5,64 @@ using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+//Ensure that Session variables always have the correct value in them
+//Definitely not completely working everywhere.. have to go through and use all session variables rather than instance variables...
 namespace BlackJackGame
 {
     public partial class BlackJack : System.Web.UI.Page
     {
-        public static int playerHandValue = 0;
-        public static int dealerHandValue = 0;
-        public static List<Card> Deck1 = new List<Card>();
-        public static int HitClicks = 0;
-        public static int AceCount = 0;
-        public static int DealerAceCount = 0;
-        public static int SubtractCount = 0;
-        public static int DealerSubtractCount = 0;
-        public static int PlayerBalance;
-        public static int PlayerBet = 0;
+       
+        //public static int playerHandValue = 0;
+        //public static int dealerHandValue = 0;
+        //public static List<Card> Deck1 = new List<Card>();
+        //public static int HitClicks = 0;
+        //public static int AceCount = 0;
+        //public static int DealerAceCount = 0;
+        //public static int SubtractCount = 0;
+        //public static int DealerSubtractCount = 0;
+        //public static int PlayerBalance;
+        //public static int PlayerBet = 0;
 
 
         protected void Page_Load(object sender, EventArgs e)
         {
-            
 
             if (!IsPostBack)
             {
+                Session["playerHandvalue"] = 0;
+                Session["dealerHandValue"] = 0;
+                Session["Deck1"] = new List<Card>();
+                Session["HitClicks"] = 0;
+                Session["AceCount"] = 0;
+                Session["DealerAceCount"] = 0;
+                Session["SubtractCount"] = 0;
+                Session["DealerSubtractCount"] = 0;
+                Session["PlayerBet"] = 0;
                 HttpCookie cookie = Request.Cookies["Balance"];
                 if (cookie != null)
                 {
-                    PlayerBalance = Convert.ToInt32(cookie.Values["balance"]);
-                    if (PlayerBalance == 0)
+                    Session["PlayerBalance"] = Convert.ToInt32(cookie.Values["balance"]);
+                    if ((int)Session["PlayerBalance"] == 0)
                     {
-                        PlayerBalance = 250;
+                        Session["PlayerBalance"] = 250;
 
                     }
                     
                 }
                 else
                 {
-                    PlayerBalance = 250;
+                    Session["PlayerBalance"] = 250;
                     cookie = new HttpCookie("Balance");
-                    cookie.Values.Add("balance", PlayerBalance.ToString());
+                    cookie.Values.Add("balance", Session["PlayerBalance"].ToString());
                     cookie.Expires = DateTime.Now.AddYears(2111);
                     
                     Response.Cookies.Add(cookie);
                 }
-                PlayerBet = 0;
+                Session["PlayerBet"] = 0;
             }
 
 
-            lblPlayerBalance.Text = $"Balance: ${PlayerBalance}";
+            lblPlayerBalance.Text = $"Balance: ${Session["PlayerBalance"]}";
             DisplayChips();
 
 
@@ -60,32 +71,32 @@ namespace BlackJackGame
 
         public void DisplayChips()
         {
-            if (PlayerBalance >= 5)
+            if ((int)Session["PlayerBalance"] >= 5)
             {
                 chip5.Visible = true;
             }
 
-            if (PlayerBalance >= 10)
+            if ((int)Session["PlayerBalance"] >= 10)
             {
                 chip10.Visible = true;
             }
 
-            if (PlayerBalance >= 25)
+            if ((int)Session["PlayerBalance"] >= 25)
             {
                 chip25.Visible = true;
             }
 
-            if (PlayerBalance >= 50)
+            if ((int)Session["PlayerBalance"] >= 50)
             {
                 chip50.Visible = true;
             }
 
-            if (PlayerBalance >= 100)
+            if ((int)Session["PlayerBalance"] >= 100)
             {
                 chip100.Visible = true;
             }
 
-            if (PlayerBalance >= 500)
+            if ((int)Session["PlayerBalance"] >= 500)
             {
                 chip500.Visible = true;
             }
@@ -95,6 +106,7 @@ namespace BlackJackGame
 
         public string Hit()
         {
+            List<Card> Deck1 = (List <Card>)Session["Deck1"];
             Card hitCard;
             string cardInfo;
             bool isunique = false;
@@ -114,123 +126,126 @@ namespace BlackJackGame
 
                 if (hitCard.Face == "Ace")
                 {
-                    AceCount++;
+                    Session["AceCount"] = (int)Session["AceCount"] + 1;
                 }
 
                 Deck1.Remove(hitCard);
                 if (!String.IsNullOrEmpty(cardInfo))
                 {
 
-                    playerHandValue += hitCard.Value;
+                    Session["playerHandvalue"] = (int)Session["playerHandvalue"] + hitCard.Value;
                     isunique = true;
                 }
             }
 
             while (!isunique);
 
-            lblPlayerHand.Text = (playerHandValue).ToString();
+            lblPlayerHand.Text = (Session["playerHandvalue"]).ToString();
+            
+
+            Session["Deck1"] = Deck1;
+
 
             HandleAces();
-
             return cardInfo;
         }
 
         private void HandleAces()
         {
-            if (AceCount == 1 && playerHandValue > 21)
+            if ((int)Session["AceCount"] == 1 && (int)Session["playerHandvalue"] > 21)
             {
-                if (SubtractCount == 0)
+                if ((int)Session["SubtractCount"] == 0)
                 {
-                    playerHandValue -= 10;
-                    SubtractCount++;
+                    Session["playerHandvalue"] = (int)Session["playerHandvalue"] - 10;
+                    Session["SubtractCount"] = (int)Session["SubtractCount"] + 1;
                 }
             }
 
-            if (AceCount == 2 && playerHandValue > 21)
+            if ((int)Session["AceCount"] == 2 && (int)Session["playerHandvalue"] > 21)
             {
-                if (SubtractCount == 0)
+                if ((int)Session["SubtractCount"] == 0)
                 {
-                    playerHandValue -= 10;
-                    SubtractCount++;
+                    Session["playerHandvalue"]= (int)Session["playerHandvalue"]- 10;
+                    Session["SubtractCount"] = (int)Session["SubtractCount"] + 1;
 
-                    if (playerHandValue > 21)
+                    if ((int)Session["playerHandvalue"] > 21)
                     {
-                        playerHandValue -= 10;
-                        SubtractCount++;
+                        Session["playerHandvalue"] = (int)Session["playerHandvalue"] - 10;
+                        Session["SubtractCount"] = (int)Session["SubtractCount"] + 1;
                     }
                 }
 
-                if (SubtractCount == 1 && playerHandValue > 21)
+                if ((int)Session["SubtractCount"] == 1 && (int)Session["playerHandvalue"] > 21)
                 {
-                    playerHandValue -= 10;
-                    SubtractCount++;
+                    Session["playerHandvalue"] = (int)Session["playerHandvalue"] - 10;
+                    Session["SubtractCount"] = (int)Session["SubtractCount"] + 1;
 
                 }
 
             }
-            if (AceCount == 3 && playerHandValue > 21)
+            if ((int)Session["AceCount"] == 3 && (int)Session["playerHandvalue"] > 21)
             {
-                if (SubtractCount == 0)
+                if ((int)Session["SubtractCount"] == 0)
                 {
-                    playerHandValue -= 10;
-                    SubtractCount++;
+                    Session["playerHandvalue"]  = (int)Session["playerHandvalue"]- 10;
+                    Session["SubtractCount"] = (int)Session["SubtractCount"] + 1;
 
-                    if (playerHandValue > 21)
+                    if ((int)Session["playerHandvalue"] > 21)
                     {
-                        playerHandValue -= 10;
-                        SubtractCount++;
+                        Session["playerHandvalue"] = (int)Session["playerHandvalue"] - 10;
+                        Session["SubtractCount"] = (int)Session["SubtractCount"] + 1;
 
-                        if (playerHandValue > 21)
+                        if ((int)Session["playerHandvalue"] > 21)
                         {
-                            playerHandValue -= 10;
-                            SubtractCount++;
+                            Session["playerHandvalue"] = (int)Session["playerHandvalue"] - 10;
+                            Session["SubtractCount"] = (int)Session["SubtractCount"] + 1;
                         }
 
                     }
 
                 }
 
-                if (SubtractCount == 1 && playerHandValue > 21)
+                if ((int)Session["SubtractCount"] == 1 && (int)Session["playerHandvalue"] > 21)
                 {
-                    playerHandValue -= 10;
-                    SubtractCount++;
+                    Session["playerHandvalue"] = (int)Session["playerHandvalue"] - 10;
+                    Session["SubtractCount"] = (int)Session["SubtractCount"] + 1;
 
-                    if (playerHandValue > 21)
+                    if ((int)Session["playerHandvalue"] > 21)
                     {
-                        playerHandValue -= 10;
-                        SubtractCount++;
+                        Session["playerHandvalue"] = (int)Session["playerHandvalue"] - 10;
+                        Session["SubtractCount"] = (int)Session["SubtractCount"] + 1;
                     }
 
                 }
-                if (SubtractCount == 2 && playerHandValue > 21)
+                if ((int)Session["SubtractCount"] == 2 && (int)Session["playerHandvalue"] > 21)
                 {
-                    playerHandValue -= 10;
-                    SubtractCount++;
+                    Session["playerHandvalue"] = (int)Session["playerHandvalue"]- 10;
+                    Session["SubtractCount"] = (int)Session["SubtractCount"] + 1;
 
                 }
 
             }
-            if (AceCount == 4 && playerHandValue > 21)
+            if ((int)Session["AceCount"] == 4 && (int)Session["playerHandvalue"] > 21)
             {
-                if (SubtractCount == 0)
+                if ((int)Session["SubtractCount"] == 0)
                 {
-                    playerHandValue -= 10;
-                    SubtractCount++;
+                    Session["playerHandvalue"] = (int)Session["playerHandvalue"]- 10;
+                    Session["SubtractCount"] = (int)Session["SubtractCount"] + 1;
 
-                    if (playerHandValue > 21)
+                    if ((int)Session["playerHandvalue"] > 21)
                     {
-                        playerHandValue -= 10;
-                        SubtractCount++;
+                        Session["playerHandvalue"] = (int)Session["playerHandvalue"]- 10;
+                        Session["SubtractCount"] = (int)Session["SubtractCount"] + 1;
 
-                        if (playerHandValue > 21)
+                        if ((int)Session["playerHandvalue"] > 21)
                         {
-                            playerHandValue -= 10;
-                            SubtractCount++;
+                            Session["playerHandvalue"] = (int)Session["playerHandvalue"]- 10;
+                            Session["SubtractCount"] = (int)Session["SubtractCount"] + 1;
 
-                            if (playerHandValue > 21)
+                            if ((int)Session["playerHandvalue"] > 21)
                             {
-                                playerHandValue -= 10;
-                                SubtractCount++;
+                                Session["playerHandvalue"] = (int)Session["playerHandvalue"]- 10;
+                                Session["SubtractCount"] = (int)Session["SubtractCount"] + 1;
                             }
                         }
 
@@ -239,23 +254,23 @@ namespace BlackJackGame
 
                 }
 
-                if (SubtractCount == 1 && playerHandValue > 21)
+                if ((int)Session["SubtractCount"] == 1 && (int)Session["playerHandvalue"] > 21)
                 {
-                    playerHandValue -= 10;
-                    SubtractCount++;
+                    Session["playerHandvalue"] = (int)Session["playerHandvalue"]- 10;
+                    Session["SubtractCount"] = (int)Session["SubtractCount"] + 1;
 
-                    if (playerHandValue > 21)
+                    if ((int)Session["playerHandvalue"] > 21)
                     {
-                        playerHandValue -= 10;
-                        SubtractCount++;
-                        if (playerHandValue > 21)
+                        Session["playerHandvalue"] = (int)Session["playerHandvalue"]- 10;
+                        Session["SubtractCount"] = (int)Session["SubtractCount"] + 1;
+                        if ((int)Session["playerHandvalue"] > 21)
                         {
-                            playerHandValue -= 10;
-                            SubtractCount++;
-                            if (playerHandValue > 21)
+                            Session["playerHandvalue"] = (int)Session["playerHandvalue"]- 10;
+                            Session["SubtractCount"] = (int)Session["SubtractCount"] + 1;
+                            if ((int)Session["playerHandvalue"] > 21)
                             {
-                                playerHandValue -= 10;
-                                SubtractCount++;
+                                Session["playerHandvalue"] = (int)Session["playerHandvalue"]- 10;
+                                Session["SubtractCount"] = (int)Session["SubtractCount"] + 1;
                             }
                         }
 
@@ -263,123 +278,126 @@ namespace BlackJackGame
                     }
 
                 }
-                if (SubtractCount == 2 && playerHandValue > 21)
+                if ((int)Session["SubtractCount"] == 2 && (int)Session["playerHandvalue"] > 21)
                 {
-                    playerHandValue -= 10;
-                    SubtractCount++;
+                    Session["playerHandvalue"] = (int)Session["playerHandvalue"]- 10;
+                    Session["SubtractCount"] = (int)Session["SubtractCount"] + 1;
                 }
-                if (playerHandValue > 21)
+                if ((int)Session["playerHandvalue"] > 21)
                 {
-                    playerHandValue -= 10;
-                    SubtractCount++;
+                    Session["playerHandvalue"] = (int)Session["playerHandvalue"]- 10;
+                    Session["SubtractCount"] = (int)Session["SubtractCount"] + 1;
 
                 }
-                if (SubtractCount == 3 && playerHandValue > 21)
+                if ((int)Session["SubtractCount"] == 3 && (int)Session["playerHandvalue"] > 21)
                 {
-                    playerHandValue -= 10;
-                    SubtractCount++;
+                    Session["playerHandvalue"] = (int)Session["playerHandvalue"]- 10;
+                    Session["SubtractCount"] = (int)Session["SubtractCount"] + 1;
                 }
 
             }
-            lblPlayerHand.Text = playerHandValue.ToString();
+
+            lblPlayerHand.Text = Session["playerHandvalue"].ToString();
         }
 
         private void DealerHandleAces()
         {
-            if (DealerAceCount == 1 && dealerHandValue > 21)
+            int DealerSubtractCount = (int)Session["SubtractCount"];
+            int DealerAceCount = (int)Session["DealerAceCount"];
+            if ((int)Session["DealerAceCount"] == 1 && (int)Session["dealerHandValue"] > 21)
             {
-                if (DealerSubtractCount == 0)
+                if ((int)Session["DealerSubtractCount"] == 0)
                 {
-                    dealerHandValue -= 10;
-                    DealerSubtractCount++;
+                    Session["dealerHandValue"] =(int)Session["dealerHandValue"] - 10;
+                    Session["DealerSubtractCount"] = (int)Session["SubtractCount"] + 1;
                 }
             }
 
-            if (DealerAceCount == 2 && dealerHandValue > 21)
+            if ((int)Session["DealerAceCount"] == 2 && (int)Session["dealerHandValue"] > 21)
             {
-                if (DealerSubtractCount == 0)
+                if ((int)Session["DealerSubtractCount"] == 0)
                 {
-                    dealerHandValue -= 10;
-                    DealerSubtractCount++;
+                    Session["dealerHandValue"] = (int)Session["dealerHandValue"] - 10;
+                    Session["DealerSubtractCount"] = (int)Session["SubtractCount"] + 1;
 
-                    if (dealerHandValue > 21)
+                    if ((int)Session["dealerHandValue"] > 21)
                     {
-                        dealerHandValue -= 10;
-                        DealerSubtractCount++;
+                        Session["dealerHandValue"] = (int)Session["dealerHandValue"] - 10;
+                        Session["DealerSubtractCount"] = (int)Session["SubtractCount"] + 1;
                     }
                 }
 
-                if (DealerSubtractCount == 1 && dealerHandValue > 21)
+                if ((int)Session["DealerSubtractCount"] == 1 && (int)Session["dealerHandValue"] > 21)
                 {
-                    dealerHandValue -= 10;
-                    DealerSubtractCount++;
+                    Session["dealerHandValue"] = (int)Session["dealerHandValue"] - 10;
+                    Session["DealerSubtractCount"] = (int)Session["SubtractCount"] + 1;
 
                 }
 
             }
-            if (DealerAceCount == 3 && dealerHandValue > 21)
+            if ((int)Session["DealerAceCount"] == 3 && (int)Session["dealerHandValue"] > 21)
             {
-                if (DealerSubtractCount == 0)
+                if ((int)Session["DealerSubtractCount"] == 0)
                 {
-                    dealerHandValue -= 10;
-                    DealerSubtractCount++;
+                    Session["dealerHandValue"] = (int)Session["dealerHandValue"] - 10;
+                    Session["DealerSubtractCount"] = (int)Session["SubtractCount"] + 1;
 
-                    if (dealerHandValue > 21)
+                    if ((int)Session["dealerHandValue"] > 21)
                     {
-                        dealerHandValue -= 10;
-                        DealerSubtractCount++;
+                        Session["dealerHandValue"] = (int)Session["dealerHandValue"] - 10;
+                        Session["DealerSubtractCount"] = (int)Session["SubtractCount"] + 1;
 
-                        if (dealerHandValue > 21)
+                        if ((int)Session["dealerHandValue"] > 21)
                         {
-                            dealerHandValue -= 10;
-                            DealerSubtractCount++;
+                            Session["dealerHandValue"] = (int)Session["dealerHandValue"] - 10;
+                            Session["DealerSubtractCount"] = (int)Session["SubtractCount"] + 1;
                         }
 
                     }
 
                 }
 
-                if (DealerSubtractCount == 1 && dealerHandValue > 21)
+                if ((int)Session["DealerSubtractCount"] == 1 && (int)Session["dealerHandValue"] > 21)
                 {
-                    dealerHandValue -= 10;
-                    DealerSubtractCount++;
+                    Session["dealerHandValue"] = (int)Session["dealerHandValue"] - 10;
+                    Session["DealerSubtractCount"] = (int)Session["SubtractCount"] + 1;
 
-                    if (dealerHandValue > 21)
+                    if ((int)Session["dealerHandValue"] > 21)
                     {
-                        dealerHandValue -= 10;
-                        DealerSubtractCount++;
+                        Session["dealerHandValue"] = (int)Session["dealerHandValue"] - 10;
+                        Session["DealerSubtractCount"] = (int)Session["SubtractCount"] + 1;
                     }
 
                 }
-                if (DealerSubtractCount == 2 && dealerHandValue > 21)
+                if ((int)Session["DealerSubtractCount"] == 2 && (int)Session["dealerHandValue"] > 21)
                 {
-                    dealerHandValue -= 10;
-                    DealerSubtractCount++;
+                    Session["dealerHandValue"] = (int)Session["dealerHandValue"] - 10;
+                    Session["DealerSubtractCount"] = (int)Session["SubtractCount"] + 1;
 
                 }
 
             }
-            if (DealerAceCount == 4 && dealerHandValue > 21)
+            if ((int)Session["DealerAceCount"] == 4 && (int)Session["dealerHandValue"] > 21)
             {
-                if (DealerSubtractCount == 0)
+                if ((int)Session["DealerSubtractCount"] == 0)
                 {
-                    dealerHandValue -= 10;
-                    DealerSubtractCount++;
+                    Session["dealerHandValue"] = (int)Session["dealerHandValue"] - 10;
+                    Session["DealerSubtractCount"] = (int)Session["SubtractCount"] + 1;
 
-                    if (dealerHandValue > 21)
+                    if ((int)Session["dealerHandValue"] > 21)
                     {
-                        dealerHandValue -= 10;
-                        DealerSubtractCount++;
+                        Session["dealerHandValue"] = (int)Session["dealerHandValue"] - 10;
+                        Session["DealerSubtractCount"] = (int)Session["SubtractCount"] + 1;
 
-                        if (dealerHandValue > 21)
+                        if ((int)Session["dealerHandValue"] > 21)
                         {
-                            dealerHandValue -= 10;
-                            DealerSubtractCount++;
+                            Session["dealerHandValue"] = (int)Session["dealerHandValue"] - 10;
+                            Session["DealerSubtractCount"] = (int)Session["SubtractCount"] + 1;
 
-                            if (dealerHandValue > 21)
+                            if ((int)Session["dealerHandValue"] > 21)
                             {
-                                dealerHandValue -= 10;
-                                DealerSubtractCount++;
+                                Session["dealerHandValue"] = (int)Session["dealerHandValue"] - 10;
+                                Session["DealerSubtractCount"] = (int)Session["SubtractCount"] + 1;
                             }
                         }
 
@@ -388,23 +406,23 @@ namespace BlackJackGame
 
                 }
 
-                if (DealerSubtractCount == 1 && dealerHandValue > 21)
+                if ((int)Session["DealerSubtractCount"] == 1 && (int)Session["dealerHandValue"] > 21)
                 {
-                    dealerHandValue -= 10;
-                    DealerSubtractCount++;
+                    Session["dealerHandValue"] = (int)Session["dealerHandValue"] - 10;
+                    Session["DealerSubtractCount"] = (int)Session["SubtractCount"] + 1;
 
-                    if (dealerHandValue > 21)
+                    if ((int)Session["dealerHandValue"] > 21)
                     {
-                        dealerHandValue -= 10;
-                        DealerSubtractCount++;
-                        if (dealerHandValue > 21)
+                        Session["dealerHandValue"] = (int)Session["dealerHandValue"] - 10;
+                        Session["DealerSubtractCount"] = (int)Session["SubtractCount"] + 1;
+                        if ((int)Session["dealerHandValue"] > 21)
                         {
-                            dealerHandValue -= 10;
-                            DealerSubtractCount++;
-                            if (dealerHandValue > 21)
+                            Session["dealerHandValue"] = (int)Session["dealerHandValue"] - 10;
+                            Session["DealerSubtractCount"] = (int)Session["SubtractCount"] + 1;
+                            if ((int)Session["dealerHandValue"] > 21)
                             {
-                                dealerHandValue -= 10;
-                                DealerSubtractCount++;
+                                Session["dealerHandValue"] = (int)Session["dealerHandValue"] - 10;
+                                Session["DealerSubtractCount"] = (int)Session["SubtractCount"] + 1;
                             }
                         }
 
@@ -412,29 +430,35 @@ namespace BlackJackGame
                     }
 
                 }
-                if (DealerSubtractCount == 2 && dealerHandValue > 21)
+                if ((int)Session["DealerSubtractCount"] == 2 && (int)Session["dealerHandValue"] > 21)
                 {
-                    dealerHandValue -= 10;
-                    DealerSubtractCount++;
+                    Session["dealerHandValue"] = (int)Session["dealerHandValue"] - 10;
+                    Session["DealerSubtractCount"] = (int)Session["SubtractCount"] + 1;
                 }
-                if (dealerHandValue > 21)
+                if ((int)Session["dealerHandValue"] > 21)
                 {
-                    dealerHandValue -= 10;
-                    DealerSubtractCount++;
+                    Session["dealerHandValue"] = (int)Session["dealerHandValue"] - 10;
+                    Session["DealerSubtractCount"] = (int)Session["SubtractCount"] + 1;
 
                 }
-                if (DealerSubtractCount == 3 && dealerHandValue > 21)
+                if ((int)Session["DealerSubtractCount"] == 3 && (int)Session["dealerHandValue"] > 21)
                 {
-                    dealerHandValue -= 10;
-                    DealerSubtractCount++;
+                    Session["dealerHandValue"] = (int)Session["dealerHandValue"] - 10;
+                    Session["DealerSubtractCount"] = (int)Session["SubtractCount"] + 1;
                 }
 
             }
+            Session["DealerAceCount"] = DealerAceCount;
+
+            Session["DealerSubtractCount"] = DealerSubtractCount;
 
         }
 
         public string DealerHit()
         {
+            List<Card> Deck1 = (List<Card>) Session["Deck1"];
+            int PlayerBet = (int)Session["PlayerBet"];
+            int DealerAceCount = (int)Session["DealerAceCount"];
             Card dealerHitCard;
             string cardInfo;
             bool isunique = false;
@@ -452,7 +476,7 @@ namespace BlackJackGame
 
                 if (dealerHitCard.Face == "Ace")
                 {
-                    DealerAceCount++;
+                    Session["DealerAceCount"] = (int)Session["DealerAceCount"] + 1;;
                 }
 
                 cardInfo = String.Format(dealerHitCard.Face + dealerHitCard.Suite);
@@ -461,24 +485,30 @@ namespace BlackJackGame
                 if (!String.IsNullOrEmpty(cardInfo))
                 {
 
-                    dealerHandValue += dealerHitCard.Value;
+                    Session["dealerHandValue"] = (int)Session["dealerHandValue"] + dealerHitCard.Value;
                     isunique = true;
                 }
+
             }
 
             while (!isunique);
             DealerHandleAces();
 
-            if (dealerHandValue > 21)
+            if ((int)Session["dealerHandValue"] > 21)
             {
                 lblWinLoseBust.Text = "Dealer Bust! You Win!";
-                lblDealerHandValue.Text = dealerHandValue.ToString();
-                PlayerBalance = PlayerBalance + (PlayerBet * 2);
+                lblDealerHandValue.Text = Session["dealerHandValue"].ToString();
+                Session["PlayerBalance"] = (int)Session["PlayerBalance"] + (PlayerBet * 2);
                 PromptToPlayAgain();
             }
-           
-            return cardInfo;
 
+            Session["Deck1"] = Deck1;
+            Session["DealerAceCount"] = DealerAceCount;
+            Session["PlayerBet"] = PlayerBet;
+            Session["Deck1"] = Deck1;
+
+            return cardInfo;
+            
         }
 
         public List<Card> ShuffleDeck()
@@ -854,7 +884,7 @@ namespace BlackJackGame
             AceOfDiamonds.ID = 52;
             Deck.Add(AceOfDiamonds);
 
-
+            Session["Deck1"] = Deck;
             return Deck;
 
 
@@ -863,6 +893,8 @@ namespace BlackJackGame
 
         public void DealCards(List<Card> Deck)
         {
+
+
             Card card1;
             Card card2;
             Card card3;
@@ -887,7 +919,7 @@ namespace BlackJackGame
                 Deck.Remove(card1);
                 if (card1.Face != null)
                 {
-                    playerHandValue = card1.Value;
+                    Session["playerHandvalue"] = card1.Value;
                     isunique = true;
                 }
             }
@@ -914,7 +946,7 @@ namespace BlackJackGame
                 if (card2.Face != null)
                 {
 
-                    playerHandValue += card2.Value;
+                    Session["playerHandvalue"] =(int)Session["playerHandvalue"] + card2.Value;
                     isunique2 = true;
                 }
             }
@@ -940,7 +972,7 @@ namespace BlackJackGame
                 if (card3.Face != null)
                 {
 
-                    dealerHandValue = card3.Value;
+                    Session["dealerHandValue"] = card3.Value;
                     isunique3 = true;
                     lblDealerHandValue.Text = card3.Value.ToString();
                 }
@@ -967,7 +999,7 @@ namespace BlackJackGame
 
                 if (card4.Face != null)
                 {
-                    dealerHandValue += card4.Value;
+                    Session["dealerHandValue"] = (int)Session["dealerHandValue"] + card4.Value;
                     isunique4 = true;
                 }
 
@@ -978,65 +1010,65 @@ namespace BlackJackGame
 
             if (card1.Face == "Ace" || card2.Face == "Ace")
             {
-                if (playerHandValue != 21)
+                if ((int)Session["playerHandvalue"] != 21)
                 {
-                    lblPlayerHand.Text = playerHandValue.ToString() + @"/" + (playerHandValue - 10).ToString();
-                    AceCount++;
+                    lblPlayerHand.Text = Session["playerHandvalue"].ToString() + @"/" + ((int)Session["playerHandvalue"] - 10).ToString();
+                    Session["AceCount"] = (int)Session["AceCount"] + 1;;
                 }
 
                 if (card1.Face == "Ace" && card2.Face == "Ace")
                 {
-                    AceCount++;
-                    playerHandValue -= 10;
-                    SubtractCount++;
+                    Session["AceCount"] = (int)Session["AceCount"] + 1;;
+                    Session["playerHandvalue"] = (int)Session["playerHandvalue"] - 10;
+                    Session["SubtractCount"] = (int)Session["SubtractCount"] + 1;
                     lblPlayerHand.Text = @"12/2";
 
                 }
 
-                if (playerHandValue == 21 && dealerHandValue != 21)
+                if ((int)Session["playerHandvalue"] == 21 && (int)Session["dealerHandValue"] != 21)
                 {
-                    lblDealerHandValue.Text = dealerHandValue.ToString();
+                    lblDealerHandValue.Text = Session["dealerHandValue"].ToString();
                     lblWinLoseBust.Text = "BlackJack! You Win";
-                    PlayerBalance = PlayerBalance + (PlayerBet * 2) + (PlayerBet / 2);
+                    Session["PlayerBalance"] = (int)Session["PlayerBalance"] + ((int)Session["PlayerBet"] * 2) + ((int)Session["PlayerBet"] / 2);
                     PromptToPlayAgain();
                     dealercardpic2.Attributes["src"] = ResolveUrl("~/Images/" + $"{lblDealerCard2.Text}.jpg"); ;
 
                 }
             }
 
-            else lblPlayerHand.Text = playerHandValue.ToString();
+            else lblPlayerHand.Text = Session["playerHandvalue"].ToString();
 
             if (card3.Face == "Ace" || card4.Face == "Ace")
             {
-                if (playerHandValue != 21)
+                if ((int)Session["playerHandvalue"] != 21)
                 {
 
 
-                    DealerAceCount++;
+                    Session["DealerAceCount"] = (int)Session["DealerAceCount"] + 1;;
 
                 }
 
                 if (card3.Face == "Ace" && card4.Face == "Ace")
                 {
-                    DealerAceCount++;
-                    dealerHandValue -= 10;
-                    DealerSubtractCount++;
+                    Session["DealerAceCount"] = (int)Session["DealerAceCount"] + 1;;
+                    Session["dealerHandValue"] = (int)Session["dealerHandValue"] - 10;
+                    Session["DealerSubtractCount"] = (int)Session["SubtractCount"] + 1;
 
                 }
 
-                if (playerHandValue == 21 && dealerHandValue == 21)
+                if ((int)Session["playerHandvalue"] == 21 && (int)Session["dealerHandValue"] == 21)
                 {
-                    lblDealerHandValue.Text = dealerHandValue.ToString();
+                    lblDealerHandValue.Text = Session["dealerHandValue"].ToString();
                     lblWinLoseBust.Text = "Push!";
-                    PlayerBalance += PlayerBet;
+                    Session["PlayerBalance"] = (int)Session["PlayerBalance"] + (int)Session["PlayerBet"];
                     PromptToPlayAgain();
                     dealercardpic2.Attributes["src"] = ResolveUrl("~/Images/" + $"{lblDealerCard2.Text}.jpg");
 
                 }
 
-                if (dealerHandValue == 21 && playerHandValue != 21)
+                if ((int)Session["dealerHandValue"] == 21 && (int)Session["playerHandvalue"] != 21)
                 {
-                    lblDealerHandValue.Text = dealerHandValue.ToString();
+                    lblDealerHandValue.Text = Session["dealerHandValue"].ToString();
                     lblWinLoseBust.Text = "Dealer BlackJack. You lose!";
                     btnHit.Visible = false;
                     btnStay.Visible = false;
@@ -1046,8 +1078,6 @@ namespace BlackJackGame
                     dealercardpic2.Attributes["src"] = ResolveUrl("~/Images/" + $"{lblDealerCard2.Text}.jpg");
                 }
             }
-
-
 
             dealercardpic1.Attributes["src"] = ResolveUrl("~/Images/" + $"{lblDealerCard1.Text}.jpg");
             playercardpic1.Attributes["src"] = ResolveUrl("~/Images/" + $"{lblPlayerCard1.Text}.jpg");
@@ -1071,45 +1101,44 @@ namespace BlackJackGame
         public void DetermineWinner(int player, int dealer)
         {
             dealercardpic2.Attributes["src"] = ResolveUrl("~/Images/" + $"{lblDealerCard2.Text}.jpg");
-            if (player > dealer && playerHandValue <= 21)
+            if (player > dealer && (int)Session["playerHandvalue"] <= 21)
             {
-                lblDealerHandValue.Text = dealerHandValue.ToString();
+                lblDealerHandValue.Text = Session["dealerHandValue"].ToString();
                 lblWinLoseBust.Text = "You win!";
-                PlayerBalance = PlayerBalance + (PlayerBet * 2);
+                Session["PlayerBalance"] = (int)Session["PlayerBalance"] + ((int)Session["PlayerBet"] * 2);
             }
             else if (player == dealer)
             {
-                lblDealerHandValue.Text = dealerHandValue.ToString();
+                lblDealerHandValue.Text = Session["dealerHandValue"].ToString();
                 lblWinLoseBust.Text = "Push!";
-                PlayerBalance += PlayerBet;
+                Session["PlayerBalance"]  = (int)Session["PlayerBalance"] + (int)Session["PlayerBet"];
 
             }
             else if (dealer <= 21 && dealer > player)
             {
-                lblDealerHandValue.Text = dealerHandValue.ToString();
+                lblDealerHandValue.Text = Session["dealerHandValue"].ToString();
                 lblWinLoseBust.Text = "You lose!";
             }
             else if (dealer > 21 && player > dealer)
             {
-                lblDealerHandValue.Text = dealerHandValue.ToString();
+                lblDealerHandValue.Text = Session["dealerHandValue"].ToString();
                 lblWinLoseBust.Text = "You Win!";
-                PlayerBalance = PlayerBalance + (PlayerBet * 2);
+                Session["PlayerBalance"] = (int)Session["PlayerBalance"] + ((int)Session["PlayerBet"] * 2);
             }
             else if (dealer > 21 && player <= 21)
             {
-                lblDealerHandValue.Text = dealerHandValue.ToString();
+                lblDealerHandValue.Text = Session["dealerHandValue"].ToString();
                 lblWinLoseBust.Text = "Dealer Bust! You win!";
-                PlayerBalance = PlayerBalance + (PlayerBet * 2);
+                Session["PlayerBalance"] = (int)Session["PlayerBalance"] + ((int)Session["PlayerBet"] * 2);
 
             }
             else
             {
                 lblWinLoseBust.Text = "You lose!";
             }
-            lblDealerHandValue.Text = dealerHandValue.ToString();
+            lblDealerHandValue.Text = Session["dealerHandValue"].ToString();
             PromptToPlayAgain();
-
-
+            
 
         }
 
@@ -1126,11 +1155,11 @@ namespace BlackJackGame
 
 
             var cookie = Request.Cookies["Balance"];
-            cookie.Values["balance"] = PlayerBalance.ToString();
+            cookie.Values["balance"] = Session["PlayerBalance"].ToString();
             cookie.Expires = DateTime.Now.AddYears(1);
             Response.Cookies.Add(cookie);
 
-            if (PlayerBalance == 0)
+            if ((int)Session["PlayerBalance"] == 0)
             {
                 btnReplenish.Visible = true;
                 btnStay.Visible = false;
@@ -1140,7 +1169,7 @@ namespace BlackJackGame
 
             }
 
-            if (PlayerBalance != 0)
+            if ((int)Session["PlayerBalance"] != 0)
                 {
                 btnReplenish.Visible = false;
                 btnStay.Visible = false;
@@ -1149,28 +1178,28 @@ namespace BlackJackGame
                 btnPlayAgain.Visible = true;
 
                 lblDealerHandValue.Visible = true;
-                PlayerBet = 0;
-                lblYourBet.Text = $"Your Bet: ${PlayerBet}";
-                lblPlayerBalance.Text = $"Balance: ${PlayerBalance}";
+                Session["PlayerBet"] = 0;
+                lblYourBet.Text = $"Your Bet: ${Session["PlayerBet"].ToString()}";
+                lblPlayerBalance.Text = $"Balance: ${Session["PlayerBalance"].ToString()}";
                 DisplayChips();
-            }
-
-           
-
+                }
+            
 
 
         }
 
         protected void btnDeal_Click1(object sender, EventArgs e)
         {
-            if (PlayerBet == 0)
+            List<Card> Deck1 = (List<Card>)Session["Deck1"];
+
+            if ((int)Session["PlayerBet"] == 0)
             {
                 lblWinLoseBust.Visible = true;
                 lblWinLoseBust.Text = "Please place a bet.";
 
             }
 
-            if (PlayerBet != 0)
+            if ((int)Session["PlayerBet"] != 0)
             {
                 btnClearBet.Visible = false;
                 lblWinLoseBust.Visible = false;
@@ -1190,7 +1219,7 @@ namespace BlackJackGame
                 btnHit.Visible = true;
                 btnStay.Visible = true;
 
-                if (PlayerBalance >= (PlayerBet))
+                if ((int)Session["PlayerBalance"] >= ((int)Session["PlayerBet"]))
                 {
                     btnDoubleDown.Visible = true;
                 }
@@ -1201,34 +1230,34 @@ namespace BlackJackGame
 
                 DealCards(Deck1);
             }
-
+            Session["Deck1"] = Deck1;
             lblInsufficentBalance.Visible = false;
         }
 
         protected void btnHit_Click1(object sender, EventArgs e)
         {
-            HitClicks++;
-            if (HitClicks == 1)
+            Session["HitClicks"] = (int)Session["HitClicks"] + 1;
+            if ((int)Session["HitClicks"] == 1)
             {
 
                 lblHitCard1.Text = Hit();
                 playercardpic3.Attributes["src"] = ResolveUrl("~/Images/" + $"{lblHitCard1.Text}.jpg");
             }
-            else if (HitClicks == 2)
+            else if ((int)Session["HitClicks"] == 2)
             {
                 lblHitCard2.Text = Hit();
                 playercardpic4.Attributes["src"] = ResolveUrl("~/Images/" + $"{lblHitCard2.Text}.jpg");
 
             }
-            else if (HitClicks == 3)
+            else if ((int)Session["HitClicks"] == 3)
             {
                 lblHitCard3.Text = Hit();
                 playercardpic5.Attributes["src"] = ResolveUrl("~/Images/" + $"{lblHitCard3.Text}.jpg");
             }
 
-            if (playerHandValue > 21)
+            if ((int)Session["playerHandvalue"] > 21)
             {
-                lblDealerHandValue.Text = dealerHandValue.ToString();
+                lblDealerHandValue.Text = Session["dealerHandValue"].ToString();
                 lblWinLoseBust.Text = "Bust! You Lose!";
                 dealercardpic2.Attributes["src"] = ResolveUrl("~/Images/" + $"{lblDealerCard2.Text}.jpg");
                 PromptToPlayAgain();
@@ -1238,29 +1267,29 @@ namespace BlackJackGame
 
         public void Stay()
         {
-            lblPlayerHand.Text = playerHandValue.ToString();
-            if (dealerHandValue < 17)
+            lblPlayerHand.Text = Session["playerHandvalue"].ToString();
+            if ((int)Session["dealerHandValue"] < 17)
             {
                 lblDealerHitCard.Text = DealerHit();
                 dealercardpic3.Attributes["src"] = ResolveUrl("~/Images/" + $"{lblDealerHitCard.Text}.jpg");
 
             }
 
-            if (dealerHandValue < 17)
+            if ((int)Session["dealerHandValue"] < 17)
             {
                 lblDealerHitCard2.Text = DealerHit();
                 dealercardpic4.Attributes["src"] = ResolveUrl("~/Images/" + $"{lblDealerHitCard2.Text}.jpg");
             }
-            if (dealerHandValue < 17)
+            if ((int)Session["dealerHandValue"] < 17)
             {
                 lblDealerHitCard3.Text = DealerHit();
                 dealercardpic5.Attributes["src"] = ResolveUrl("~/Images/" + $"{lblDealerHitCard3.Text}.jpg");
             }
-            lblDealerHandValue.Text = dealerHandValue.ToString();
+            lblDealerHandValue.Text = Session["dealerHandValue"].ToString();
 
 
 
-            DetermineWinner(playerHandValue, dealerHandValue);
+            DetermineWinner((int)Session["playerHandvalue"], (int)Session["dealerHandValue"]);
             lblWinLoseBust.Visible = true;
             btnHit.Visible = false;
             btnStay.Visible = false;
@@ -1280,8 +1309,9 @@ namespace BlackJackGame
 
         protected void btnPlayAgain_Click1(object sender, EventArgs e)
         {
-            playerHandValue = 0;
-            dealerHandValue = 0;
+            List<Card> Deck1 = (List<Card>)Session["Deck1"];
+            Session["playerHandvalue"] = 0;
+            Session["dealerHandValue"] = 0;
             Deck1 = ShuffleDeck();
 
             lblDealerCard1.Text = "";
@@ -1296,11 +1326,11 @@ namespace BlackJackGame
 
             btnDeal.Visible = true;
             btnPlayAgain.Visible = false;
-            HitClicks = 0;
-            AceCount = 0;
-            DealerAceCount = 0;
-            SubtractCount = 0;
-            DealerSubtractCount = 0;
+            Session["HitClicks"] = 0;
+            Session["AceCount"] = 0;
+            Session["DealerAceCount"] = 0;
+            Session["SubtractCount"] = 0;
+            Session["DealerSubtractCount"] = 0;
 
             playercardpic1.Attributes["src"] = ResolveUrl("~/Images/BlankCard.PNG");
             playercardpic2.Attributes["src"] = ResolveUrl("~/Images/BlankCard.PNG");
@@ -1328,12 +1358,12 @@ namespace BlackJackGame
         {
             lblInsufficentBalance.Visible = false;
             btnClearBet.Visible = true;
-            if (PlayerBalance >= 1)
+            if ((int)Session["PlayerBalance"] >= 1)
             {
-                PlayerBalance -= 1;
-                PlayerBet += 1;
-                lblYourBet.Text = $"Your Bet: ${PlayerBet}";
-                lblPlayerBalance.Text = $"Balance: ${PlayerBalance}";
+                Session["PlayerBalance"] = (int)Session["PlayerBalance"] - 1;
+                Session["PlayerBet"] = (int)Session["PlayerBet"] + 1;
+                lblYourBet.Text = $"Your Bet: ${Session["PlayerBet"].ToString()}";
+                lblPlayerBalance.Text = $"Balance: ${Session["PlayerBalance"].ToString()}";
             }
             else
                 lblInsufficentBalance.Visible = true;
@@ -1344,96 +1374,103 @@ namespace BlackJackGame
         {
             lblInsufficentBalance.Visible = false;
             btnClearBet.Visible = true;
-            if (PlayerBalance >= 5)
+            if ((int)Session["PlayerBalance"] >= 5)
             {
-                PlayerBalance -= 5;
-                PlayerBet += 5;
-                lblYourBet.Text = $"Your Bet: ${PlayerBet}";
-                lblPlayerBalance.Text = $"Balance: ${PlayerBalance}";
+                Session["PlayerBalance"] = (int)Session["PlayerBalance"] - 5;
+                Session["PlayerBet"] = (int)Session["PlayerBet"] + 5;
+                lblYourBet.Text = $"Your Bet: ${Session["PlayerBet"].ToString()}";
+                lblPlayerBalance.Text = $"Balance: ${Session["PlayerBalance"].ToString()}";
             }
             else
                 lblInsufficentBalance.Visible = true;
-
+            
         }
 
         protected void chip10_Click(object sender, ImageClickEventArgs e)
         {
             lblInsufficentBalance.Visible = false;
             btnClearBet.Visible = true;
-            if (PlayerBalance >= 10)
+            if ((int)Session["PlayerBalance"] >= 10)
             {
-                PlayerBalance -= 10;
-                PlayerBet += 10;
-                lblYourBet.Text = $"Your Bet: ${PlayerBet}";
-                lblPlayerBalance.Text = $"Your Balance: ${PlayerBalance}";
+                Session["PlayerBalance"] = (int)Session["PlayerBalance"] - 10;
+                Session["PlayerBet"] = (int)Session["PlayerBet"] + 10;
+                lblYourBet.Text = $"Your Bet: ${Session["PlayerBet"].ToString()}";
+                lblPlayerBalance.Text = $"Your Balance: ${Session["PlayerBalance"].ToString()}";
             }
             else
                 lblInsufficentBalance.Visible = true;
+            
         }
 
         protected void chip25_Click(object sender, ImageClickEventArgs e)
         {
+
             lblInsufficentBalance.Visible = false;
             btnClearBet.Visible = true;
-            if (PlayerBalance >= 25)
+            if ((int)Session["PlayerBalance"] >= 25)
             {
-                PlayerBalance -= 25;
-                PlayerBet += 25;
-                lblYourBet.Text = $"Your Bet: ${PlayerBet}";
-                lblPlayerBalance.Text = $"Balance: ${PlayerBalance}";
+                Session["PlayerBalance"] = (int)Session["PlayerBalance"] - 25;
+                Session["PlayerBet"] = (int)Session["PlayerBet"] + 25;
+                lblYourBet.Text = $"Your Bet: ${Session["PlayerBet"].ToString()}";
+                lblPlayerBalance.Text = $"Balance: ${Session["PlayerBalance"].ToString()}";
             }
             else
                 lblInsufficentBalance.Visible = true;
+            
         }
 
         protected void chip50_Click(object sender, ImageClickEventArgs e)
         {
+
             lblInsufficentBalance.Visible = false;
             btnClearBet.Visible = true;
-            if (PlayerBalance >= 50)
+            if ((int)Session["PlayerBalance"] >= 50)
             {
-                PlayerBalance -= 50;
-                PlayerBet += 50;
-                lblYourBet.Text = $"Your Bet: ${PlayerBet}";
-                lblPlayerBalance.Text = $"Balance: ${PlayerBalance}";
+                Session["PlayerBalance"] = (int)Session["PlayerBalance"] - 50;
+                Session["PlayerBet"] = (int)Session["PlayerBet"] + 50;
+                lblYourBet.Text = $"Your Bet: ${Session["PlayerBet"].ToString()}";
+                lblPlayerBalance.Text = $"Balance: ${Session["PlayerBalance"].ToString()}";
             }
             else
                 lblInsufficentBalance.Visible = true;
+            
         }
 
         protected void chip100_Click(object sender, ImageClickEventArgs e)
         {
             lblInsufficentBalance.Visible = false;
             btnClearBet.Visible = true;
-            if (PlayerBalance >= 100)
+            if ((int)Session["PlayerBalance"] >= 100)
             {
-                PlayerBalance -= 100;
-                PlayerBet += 100;
-                lblYourBet.Text = $"Your Bet: ${PlayerBet}";
-                lblPlayerBalance.Text = $"Balance: ${PlayerBalance}";
+                Session["PlayerBalance"] = (int)Session["PlayerBalance"] - 100;
+                Session["PlayerBet"] = (int)Session["PlayerBet"] + 100;
+                lblYourBet.Text = $"Your Bet: ${Session["PlayerBet"].ToString()}";
+                lblPlayerBalance.Text = $"Balance: ${Session["PlayerBalance"].ToString()}";
             }
             else
                 lblInsufficentBalance.Visible = true;
+            
         }
 
         protected void chip500_Click(object sender, ImageClickEventArgs e)
         {
             lblInsufficentBalance.Visible = false;
             btnClearBet.Visible = true;
-            if (PlayerBalance >= 500)
+            if ((int)Session["PlayerBalance"] >= 500)
             {
-                PlayerBalance -= 500;
-                PlayerBet += 500;
-                lblYourBet.Text = $"Your Bet: ${PlayerBet}";
-                lblPlayerBalance.Text = $"Balance: ${PlayerBalance}";
+                Session["PlayerBalance"] = (int)Session["PlayerBalance"] - 500;
+                Session["PlayerBet"] = (int)Session["PlayerBet"] + 500;
+                lblYourBet.Text = $"Your Bet: ${Session["PlayerBet"].ToString()}";
+                lblPlayerBalance.Text = $"Balance: ${Session["PlayerBalance"].ToString()}";
             }
             else
                 lblInsufficentBalance.Visible = true;
+            
         }
 
         protected void btnReplenish_Click(object sender, EventArgs e)
         {
-            PlayerBalance = 250;
+            Session["PlayerBalance"] = 250;
             playercardpic1.Attributes["src"] = ResolveUrl("~/Images/BlankCard.PNG");
             playercardpic2.Attributes["src"] = ResolveUrl("~/Images/BlankCard.PNG");
             playercardpic3.Attributes["src"] = ResolveUrl("~/Images/BlankCard.PNG");
@@ -1453,25 +1490,24 @@ namespace BlackJackGame
 
         protected void btnClearBet_Click(object sender, EventArgs e)
         {
-            PlayerBalance += PlayerBet;
-            PlayerBet = 0;
-            lblPlayerBalance.Text = $"Balance: ${PlayerBalance}";
-            lblYourBet.Text = $"Your Bet: ${PlayerBet}";
+            Session["PlayerBalance"] = (int)Session["PlayerBalance"] + (int)Session["PlayerBet"];
+            Session["PlayerBet"] = 0;
+            lblPlayerBalance.Text = $"Balance: ${Session["PlayerBalance"].ToString()}";
+            lblYourBet.Text = $"Your Bet: ${Session["PlayerBet"].ToString()}";
             btnClearBet.Visible = false;
-
         }
 
         protected void btnDoubleDown_Click(object sender, EventArgs e)
         {
-            PlayerBalance -= PlayerBet;
-            PlayerBet += PlayerBet;
-            lblPlayerBalance.Text = $"Balance: ${PlayerBalance}";
-            lblYourBet.Text = $"Your Bet: ${PlayerBet}";
+            Session["PlayerBalance"] = (int)Session["PlayerBalance"] - (int)Session["PlayerBet"];
+            Session["PlayerBet"] = (int)Session["PlayerBet"] + (int)Session["PlayerBet"];
+            lblPlayerBalance.Text = $"Balance: ${Session["PlayerBalance"].ToString()}";
+            lblYourBet.Text = $"Your Bet: ${Session["PlayerBet"].ToString()}";
 
             lblHitCard1.Text = Hit();
             playercardpic3.Attributes["src"] = ResolveUrl("~/Images/" + $"{lblHitCard1.Text}.jpg");
             Stay();
-
+            
             btnDoubleDown.Visible = false;
         }
     }
