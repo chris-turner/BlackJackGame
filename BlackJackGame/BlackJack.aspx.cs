@@ -300,8 +300,6 @@ namespace BlackJackGame
 
         private void DealerHandleAces()
         {
-            int DealerSubtractCount = (int)Session["SubtractCount"];
-            int DealerAceCount = (int)Session["DealerAceCount"];
             if ((int)Session["DealerAceCount"] == 1 && (int)Session["dealerHandValue"] > 21)
             {
                 if ((int)Session["DealerSubtractCount"] == 0)
@@ -446,17 +444,12 @@ namespace BlackJackGame
                 }
 
             }
-            Session["DealerAceCount"] = DealerAceCount;
-
-            Session["DealerSubtractCount"] = DealerSubtractCount;
 
         }
 
         public string DealerHit()
         {
             List<Card> Deck1 = (List<Card>) Session["Deck1"];
-            int PlayerBet = (int)Session["PlayerBet"];
-            int DealerAceCount = (int)Session["DealerAceCount"];
             Card dealerHitCard;
             string cardInfo;
             bool isunique = false;
@@ -496,13 +489,10 @@ namespace BlackJackGame
             {
                 lblWinLoseBust.Text = "Dealer Bust! You Win!";
                 lblDealerHandValue.Text = Session["dealerHandValue"].ToString();
-                Session["PlayerBalance"] = (int)Session["PlayerBalance"] + (PlayerBet * 2);
+                Session["PlayerBalance"] = (int)Session["PlayerBalance"] + ((int)Session["PlayerBet"] * 2);
                 PromptToPlayAgain();
             }
 
-            Session["Deck1"] = Deck1;
-            Session["DealerAceCount"] = DealerAceCount;
-            Session["PlayerBet"] = PlayerBet;
             Session["Deck1"] = Deck1;
 
             return cardInfo;
@@ -1076,6 +1066,7 @@ namespace BlackJackGame
                     dealercardpic2.Attributes["src"] = ResolveUrl("~/Images/" + $"{lblDealerCard2.Text}.jpg");
                 }
             }
+            Session["Deck1"] = Deck;
 
             dealercardpic1.Attributes["src"] = ResolveUrl("~/Images/" + $"{lblDealerCard1.Text}.jpg");
             playercardpic1.Attributes["src"] = ResolveUrl("~/Images/" + $"{lblPlayerCard1.Text}.jpg");
@@ -1307,10 +1298,9 @@ namespace BlackJackGame
 
         protected void btnPlayAgain_Click1(object sender, EventArgs e)
         {
-            List<Card> Deck1 = (List<Card>)Session["Deck1"];
             Session["playerHandvalue"] = 0;
             Session["dealerHandValue"] = 0;
-            Deck1 = ShuffleDeck();
+            ShuffleDeck();
 
             lblDealerCard1.Text = "";
             lblDealerCard2.Text = "";
