@@ -5,8 +5,6 @@ using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
-//Ensure that Session variables always have the correct value in them
-//Definitely not completely working everywhere.. have to go through and use all session variables rather than instance variables...
 namespace BlackJackGame
 {
     public partial class BlackJack : System.Web.UI.Page
